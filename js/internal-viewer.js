@@ -206,53 +206,107 @@ const InternalViewer = {
         this.nodes = [];
         this.connections = [];
 
-        const nodeCounts = this.getNodeCounts(cocoon);
+        // Colors for node types
+        const colors = {
+            input: 0x22ff88,
+            internal: 0x4488ff,
+            output: 0xffaa22
+        };
 
-        // Colors
-        const inputColor = 0x22ff88;
-        const internalColor = 0x4488ff;
-        const outputColor = 0xffaa22;
+        // Materials
+        const materials = {
+            input: new THREE.MeshPhongMaterial({ color: colors.input, emissive: colors.input, emissiveIntensity: 0.3 }),
+            internal: new THREE.MeshPhongMaterial({ color: colors.internal, emissive: colors.internal, emissiveIntensity: 0.15 }),
+            output: new THREE.MeshPhongMaterial({ color: colors.output, emissive: colors.output, emissiveIntensity: 0.3 })
+        };
 
-        // Node materials
-        const inputMat = new THREE.MeshPhongMaterial({ color: inputColor, emissive: inputColor, emissiveIntensity: 0.2 });
-        const internalMat = new THREE.MeshPhongMaterial({ color: internalColor, emissive: internalColor, emissiveIntensity: 0.15 });
-        const outputMat = new THREE.MeshPhongMaterial({ color: outputColor, emissive: outputColor, emissiveIntensity: 0.2 });
+        const nodeGeo = new THREE.SphereGeometry(0.04, 12, 12);
+        const nodeById = {};
 
-        // Generate positions based on internal structure type
-        // Using sphere structure for now
-        const positions = this.generateSpherePositions(nodeCounts);
+        // Check if we have REAL node data from NCX
+        if (cocoon.nodes && cocoon.nodes.length > 0) {
+            // Use REAL positions from NCX file
+            console.log(`[InternalViewer] Using REAL data: ${cocoon.nodes.length} nodes`);
 
-        // Create input nodes (top ring)
-        const nodeGeo = new THREE.SphereGeometry(0.04, 16, 16);
+            cocoon.nodes.forEach((nodeData) => {
+                const nodeType = nodeData.type || 'internal';
+                const material = materials[nodeType] || materials.internal;
+                const node = new THREE.Mesh(nodeGeo, material.clone());
 
-        for (let i = 0; i < nodeCounts.input; i++) {
-            const node = new THREE.Mesh(nodeGeo, inputMat);
-            node.position.set(positions.input[i].x, positions.input[i].y, positions.input[i].z);
-            node.userData = { type: 'input', index: i };
-            this.scene.add(node);
-            this.nodes.push(node);
+                // Use real position from NCX
+                node.position.set(
+                    nodeData.position[0],
+                    nodeData.position[1],
+                    nodeData.position[2]
+                );
+                node.userData = { type: nodeType, id: nodeData.id };
+
+                this.scene.add(node);
+                this.nodes.push(node);
+                nodeById[nodeData.id] = node;
+            });
+
+            // Render REAL connections from NCX
+            if (cocoon.internalConnections && cocoon.internalConnections.length > 0) {
+                console.log(`[InternalViewer] Rendering ${cocoon.internalConnections.length} connections`);
+
+                const connectionMat = new THREE.LineBasicMaterial({
+                    color: 0x4488ff,
+                    transparent: true,
+                    opacity: 0.12
+                });
+
+                cocoon.internalConnections.forEach(conn => {
+                    const srcNode = nodeById[conn[0]];
+                    const tgtNode = nodeById[conn[1]];
+
+                    if (srcNode && tgtNode) {
+                        const geometry = new THREE.BufferGeometry().setFromPoints([
+                            srcNode.position.clone(),
+                            tgtNode.position.clone()
+                        ]);
+                        const line = new THREE.Line(geometry, connectionMat);
+                        this.scene.add(line);
+                        this.connections.push(line);
+                    }
+                });
+            }
+        } else {
+            // Fallback: Generate placeholder positions (old behavior)
+            console.log('[InternalViewer] No real data, using generated positions');
+            const nodeCounts = this.getNodeCounts(cocoon);
+            const positions = this.generateSpherePositions(nodeCounts);
+
+            // Create input nodes (top ring)
+            for (let i = 0; i < nodeCounts.input; i++) {
+                const node = new THREE.Mesh(nodeGeo, materials.input);
+                node.position.set(positions.input[i].x, positions.input[i].y, positions.input[i].z);
+                node.userData = { type: 'input', index: i };
+                this.scene.add(node);
+                this.nodes.push(node);
+            }
+
+            // Create internal nodes (middle volume)
+            for (let i = 0; i < nodeCounts.internal; i++) {
+                const node = new THREE.Mesh(nodeGeo, materials.internal);
+                node.position.set(positions.internal[i].x, positions.internal[i].y, positions.internal[i].z);
+                node.userData = { type: 'internal', index: i };
+                this.scene.add(node);
+                this.nodes.push(node);
+            }
+
+            // Create output nodes (bottom ring)
+            for (let i = 0; i < nodeCounts.output; i++) {
+                const node = new THREE.Mesh(nodeGeo, materials.output);
+                node.position.set(positions.output[i].x, positions.output[i].y, positions.output[i].z);
+                node.userData = { type: 'output', index: i };
+                this.scene.add(node);
+                this.nodes.push(node);
+            }
+
+            // Generate placeholder connections
+            this.generateConnections(positions, nodeCounts);
         }
-
-        // Create internal nodes (middle volume)
-        for (let i = 0; i < nodeCounts.internal; i++) {
-            const node = new THREE.Mesh(nodeGeo, internalMat);
-            node.position.set(positions.internal[i].x, positions.internal[i].y, positions.internal[i].z);
-            node.userData = { type: 'internal', index: i };
-            this.scene.add(node);
-            this.nodes.push(node);
-        }
-
-        // Create output nodes (bottom ring)
-        for (let i = 0; i < nodeCounts.output; i++) {
-            const node = new THREE.Mesh(nodeGeo, outputMat);
-            node.position.set(positions.output[i].x, positions.output[i].y, positions.output[i].z);
-            node.userData = { type: 'output', index: i };
-            this.scene.add(node);
-            this.nodes.push(node);
-        }
-
-        // Generate some representative connections
-        this.generateConnections(positions, nodeCounts);
     },
 
     /**
