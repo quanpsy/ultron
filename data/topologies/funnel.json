@@ -1,0 +1,61 @@
+{
+    "id": "funnel",
+    "name": "Funnel (Tornado)",
+    "description": "Narrow input at apex, wide output at base. Symmetric spiral connections.",
+    "properties": {
+        "hasLayers": true,
+        "guaranteedDepth": true,
+        "symmetric": true,
+        "minPath": "numLayers - 1"
+    },
+    "parameters": {
+        "numLayers": {
+            "default": 7,
+            "min": 3,
+            "max": 12,
+            "description": "Number of layers from apex to base"
+        },
+        "baseCocoons": {
+            "default": 50,
+            "min": 10,
+            "max": 100,
+            "description": "Number of cocoons at the widest layer"
+        },
+        "spiralOffset": {
+            "default": 0.15,
+            "description": "Rotation offset per layer (radians) - smaller = more symmetric"
+        }
+    },
+    "generator": {
+        "type": "funnel",
+        "layerSizes": "exponential",
+        "connectionPattern": "spiral",
+        "flowDirection": "top_to_bottom"
+    },
+    "visualization": {
+        "spacing": {
+            "layerHeight": 1.2,
+            "baseRadius": 4.5
+        },
+        "typeDistribution": {
+            "apex": [
+                "sensor",
+                "sensor",
+                "sensor",
+                "sensor"
+            ],
+            "middle": [
+                "processor",
+                "processor",
+                "processor",
+                "memory"
+            ],
+            "base": [
+                "processor",
+                "processor",
+                "memory",
+                "modulator"
+            ]
+        }
+    }
+}

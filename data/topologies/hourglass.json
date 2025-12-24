@@ -1,0 +1,72 @@
+{
+    "id": "hourglass",
+    "name": "Hourglass (Bottleneck)",
+    "description": "Narrow ends, dense center. Information compresses then expands.",
+    "properties": {
+        "hasLayers": true,
+        "guaranteedDepth": true,
+        "bottleneck": true,
+        "minPath": "numLayers - 1"
+    },
+    "parameters": {
+        "numLayers": {
+            "default": 7,
+            "min": 5,
+            "max": 11,
+            "description": "Number of layers (odd for symmetric hourglass)"
+        },
+        "endCocoons": {
+            "default": 30,
+            "min": 5,
+            "max": 50,
+            "description": "Cocoons at each end (input/output)"
+        },
+        "centerCocoons": {
+            "default": 8,
+            "min": 3,
+            "max": 20,
+            "description": "Cocoons at the narrow center (bottleneck)"
+        }
+    },
+    "generator": {
+        "type": "hourglass",
+        "layerSizes": "symmetric_compress",
+        "connectionPattern": "funnel_to_center_then_expand"
+    },
+    "visualization": {
+        "spacing": {
+            "layerHeight": 1.2
+        },
+        "typeDistribution": {
+            "input": [
+                "sensor",
+                "sensor",
+                "sensor",
+                "processor"
+            ],
+            "compress": [
+                "processor",
+                "processor",
+                "memory",
+                "memory"
+            ],
+            "center": [
+                "memory",
+                "memory",
+                "modulator"
+            ],
+            "expand": [
+                "processor",
+                "processor",
+                "memory",
+                "modulator"
+            ],
+            "output": [
+                "processor",
+                "processor",
+                "processor",
+                "modulator"
+            ]
+        }
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "id": "random",
+    "name": "Random Graph",
+    "description": "Nodes connected randomly. No spatial structure.",
+    "properties": {
+        "spatial": false,
+        "locality": false,
+        "efficient": false
+    },
+    "parameters": {
+        "connectionDensity": {
+            "default": 0.3,
+            "description": "Probability of connection between any two nodes"
+        }
+    },
+    "generator": {
+        "nodeDistribution": "random_3d",
+        "connectionRule": "probability_based",
+        "weightRule": "gaussian"
+    },
+    "stats": {
+        "avgConnections": 664,
+        "variance": 0.016897,
+        "note": "High connection count, less stable"
+    }
+}

@@ -1,0 +1,38 @@
+{
+    "sensor": {
+        "seed": "00",
+        "name": "Sensor",
+        "color": "#22c55e",
+        "description": "Encodes external input into internal representation",
+        "inputNodes": 16,
+        "outputNodes": 8,
+        "internalNodes": 50
+    },
+    "processor": {
+        "seed": "01",
+        "name": "Processor",
+        "color": "#6366f1",
+        "description": "Transforms and integrates information",
+        "inputNodes": 8,
+        "outputNodes": 8,
+        "internalNodes": 50
+    },
+    "memory": {
+        "seed": "10",
+        "name": "Memory",
+        "color": "#f59e0b",
+        "description": "Maintains state over time, stores/retrieves patterns",
+        "inputNodes": 4,
+        "outputNodes": 8,
+        "internalNodes": 50
+    },
+    "modulator": {
+        "seed": "11",
+        "name": "Modulator",
+        "color": "#ef4444",
+        "description": "Controls global dynamics, attention, learning rate",
+        "inputNodes": 4,
+        "outputNodes": 16,
+        "internalNodes": 50
+    }
+}

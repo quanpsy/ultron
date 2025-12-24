@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTRON - Neural Cocoon Viewer</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <div id="canvas-container"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">ULTRON<span class="logo-subtitle">Neural Experiment Viewer</span></div>
+        <div class="header-stats">
+            <div class="stat">
+                <span>COCOONS</span>
+                <span class="stat-value" id="stat-cocoons">0</span>
+            </div>
+            <div class="stat">
+                <span>CONNECTIONS</span>
+                <span class="stat-value" id="stat-connections">0</span>
+            </div>
+            <div class="stat">
+                <span>TIMESTEP</span>
+                <span class="stat-value" id="stat-timestep">-</span>
+            </div>
+        </div>
+        <button class="theme-btn" id="btn-theme" onclick="toggleTheme()">JARVIS</button>
+    </div>
+
+    <!-- Left Control Panel -->
+    <div class="control-panel">
+        <div class="panel-title">Experiment</div>
+
+        <!-- File Loading -->
+        <div class="control-group">
+            <label class="control-label">Load NCX File</label>
+            <input type="file" id="file-input" accept=".ncx.json,.json" style="display:none"
+                onchange="loadNCXFile(this)">
+            <button class="btn" onclick="document.getElementById('file-input').click()">Load .ncx.json</button>
+            <button class="btn" onclick="loadSampleExperiment()">Load Sample</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="panel-title">Mode</div>
+
+        <div class="control-group">
+            <label class="control-label">View Mode</label>
+            <div class="btn-group">
+                <button class="btn active" id="btn-experiment" onclick="setViewMode('experiment')">Experiment</button>
+                <button class="btn" id="btn-topology" onclick="setViewMode('topology')">Live Demo</button>
+            </div>
+        </div>
+
+        <!-- Live Demo Controls (hidden when in experiment mode) -->
+        <div id="live-controls" style="display:none">
+            <div class="control-group">
+                <label class="control-label">Topology Type</label>
+                <select id="topology-select" onchange="changeTopology(this.value)">
+                    <!-- Populated from data -->
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Internal Structure</label>
+                <select id="structure-select" onchange="changeStructure(this.value)">
+                    <!-- Populated from data -->
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Cocoon Count</label>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="cocoon-slider" min="10" max="150" value="50"
+                        onchange="updateCocoonCount(this.value)">
+                    <span class="slider-value" id="cocoon-count">50</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+            <label class="control-label">Rotation Speed</label>
+            <div class="slider-container">
+                <input type="range" class="slider" id="speed-slider" min="0" max="100" value="30"
+                    onchange="updateSpeed(this.value)">
+                <span class="slider-value" id="speed-value">30%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Info Panel / Inspector -->
+    <div class="info-panel">
+        <div class="panel-title">Experiment Info</div>
+
+        <div id="experiment-info">
+            <div class="info-item">
+                <span class="info-label">Name</span>
+                <span class="info-value" id="info-name">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Topology</span>
+                <span class="info-value" id="info-topology">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Total Cocoons</span>
+                <span class="info-value" id="info-cocoons">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Connections</span>
+                <span class="info-value" id="info-connections">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">History Steps</span>
+                <span class="info-value" id="info-history">-</span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Inspector for selected cocoon -->
+        <div class="panel-title">Inspector</div>
+        <div id="inspector">
+            <div class="inspector-hint">Click a cocoon to inspect</div>
+            <div id="inspector-details" style="display:none">
+                <div class="info-item">
+                    <span class="info-label">Cocoon ID</span>
+                    <span class="info-value" id="inspector-id">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Type</span>
+                    <span class="info-value" id="inspector-type">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Position</span>
+                    <span class="info-value" id="inspector-position">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Connections</span>
+                    <span class="info-value" id="inspector-connections">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Activation</span>
+                    <span class="info-value" id="inspector-activation">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="legend">
+            <div class="panel-title">Seed Types</div>
+            <div id="type-legend">
+                <!-- Populated from data -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom HUD with Playback -->
+    <div class="bottom-hud">
+        <div class="playback-controls" id="playback-controls">
+            <button class="hud-btn" id="btn-prev" onclick="stepBackward()">◀◀</button>
+            <button class="hud-btn" id="btn-play" onclick="togglePlayback()">▶</button>
+            <button class="hud-btn" id="btn-next" onclick="stepForward()">▶▶</button>
+            <div class="timeline-container">
+                <input type="range" class="timeline-slider" id="timeline-slider" min="0" max="0" value="0"
+                    onchange="seekTimeline(this.value)">
+                <span class="timeline-value" id="timeline-value">0 / 0</span>
+            </div>
+        </div>
+        <div class="hud-buttons">
+            <button class="hud-btn" onclick="resetView()">Reset View</button>
+            <button class="hud-btn active" id="btn-auto-rotate" onclick="toggleAutoRotate()">Auto Rotate</button>
+            <button class="hud-btn" id="btn-flow" onclick="toggleFlow()">Show Flow</button>
+        </div>
+    </div>
+
+    <!-- Drop Zone Overlay -->
+    <div class="drop-zone" id="drop-zone">
+        <div class="drop-content">
+            <div class="drop-icon">📂</div>
+            <div class="drop-text">Drop .ncx.json file here</div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">Loading data...</div>
+
+    <!-- Internal Structure Viewer Modal -->
+    <div class="internal-modal" id="internal-modal" style="display:none">
+        <div class="internal-modal-header" id="internal-modal-header">
+            <div class="internal-modal-title">
+                <span id="internal-cocoon-type">PROCESSOR</span>
+                <span class="internal-cocoon-id" id="internal-cocoon-id">#0</span>
+            </div>
+            <button class="internal-modal-close" onclick="closeInternalViewer()">X</button>
+        </div>
+        <div class="internal-modal-body">
+            <div class="internal-canvas-container" id="internal-canvas-container"></div>
+            <div class="internal-info-panel">
+                <div class="internal-info-section">
+                    <div class="internal-info-title">Structure</div>
+                    <div class="internal-info-row"><span>Layer:</span><span id="internal-layer">0</span></div>
+                    <div class="internal-info-row"><span>Seed:</span><span id="internal-seed">01</span></div>
+                </div>
+                <div class="internal-info-section">
+                    <div class="internal-info-title">Nodes</div>
+                    <div class="internal-info-row"><span>Input:</span><span id="internal-inputs" class="node-count input">0</span></div>
+                    <div class="internal-info-row"><span>Internal:</span><span id="internal-internals" class="node-count internal">0</span></div>
+                    <div class="internal-info-row"><span>Output:</span><span id="internal-outputs" class="node-count output">0</span></div>
+                </div>
+                <div class="internal-info-section">
+                    <div class="internal-info-title">Connections</div>
+                    <div class="internal-info-row"><span>Total:</span><span id="internal-connections">0</span></div>
+                </div>
+                <div class="internal-info-section">
+                    <div class="internal-info-title">Legend</div>
+                    <div class="internal-legend">
+                        <div class="legend-item"><span class="legend-dot input"></span> Input</div>
+                        <div class="legend-item"><span class="legend-dot internal"></span> Internal</div>
+                        <div class="legend-item"><span class="legend-dot output"></span> Output</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="internal-modal-footer">
+            <span class="internal-hint">Drag to rotate - Scroll to zoom - Double-click another cocoon to switch</span>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Application Modules -->
+    <script src="js/data-manager.js"></script>
+    <script src="js/generators.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/ncx-loader.js"></script>
+    <script src="js/internal-viewer.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
+
+

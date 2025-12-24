@@ -1,0 +1,30 @@
+{
+    "id": "sphere",
+    "name": "Sphere Surface",
+    "description": "Nodes on sphere surface using fibonacci spiral. Distance-based connections.",
+    "properties": {
+        "spatial": true,
+        "locality": true,
+        "efficient": true
+    },
+    "parameters": {
+        "distanceThreshold": {
+            "default": 0.8,
+            "description": "Maximum distance for connections (sphere radius = 1)"
+        },
+        "connectionDensity": {
+            "default": 0.3,
+            "description": "Base probability of connection"
+        }
+    },
+    "generator": {
+        "nodeDistribution": "fibonacci_sphere",
+        "connectionRule": "distance_based",
+        "weightRule": "inverse_distance"
+    },
+    "stats": {
+        "avgConnections": 65,
+        "variance": 0.001572,
+        "note": "10x more efficient than random"
+    }
+}

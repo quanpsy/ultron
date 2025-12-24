@@ -1,0 +1,33 @@
+{
+    "id": "smallworld",
+    "name": "Small-World",
+    "description": "Watts-Strogatz network. Local clustering with random shortcuts.",
+    "properties": {
+        "hasLayers": false,
+        "guaranteedDepth": false,
+        "clustering": true
+    },
+    "parameters": {
+        "kNeighbors": {
+            "default": 4,
+            "min": 2,
+            "max": 10,
+            "description": "Each node connects to k nearest neighbors"
+        },
+        "rewireProb": {
+            "default": 0.3,
+            "min": 0,
+            "max": 1,
+            "description": "Probability of random rewiring"
+        }
+    },
+    "generator": {
+        "type": "smallworld",
+        "connectionPattern": "ring_lattice_with_rewiring"
+    },
+    "visualization": {
+        "layout": "circular_with_noise",
+        "radius": 5,
+        "heightVariance": 4
+    }
+}

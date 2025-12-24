@@ -1,0 +1,39 @@
+{
+    "id": "onion",
+    "name": "Onion (Shells)",
+    "description": "Concentric shells. Input at center, output at surface.",
+    "properties": {
+        "hasLayers": true,
+        "guaranteedDepth": true,
+        "symmetric": true,
+        "minPath": "numLayers - 1"
+    },
+    "parameters": {
+        "numLayers": {
+            "default": 4,
+            "min": 2,
+            "max": 8,
+            "description": "Number of concentric shells"
+        },
+        "cocoonsPerLayer": {
+            "default": [
+                2,
+                6,
+                12,
+                24
+            ],
+            "description": "Cocoons in each layer (center to surface)"
+        }
+    },
+    "generator": {
+        "type": "onion",
+        "layerSizes": "custom",
+        "connectionPattern": "radial"
+    },
+    "visualization": {
+        "spacing": {
+            "layerRadius": 2
+        },
+        "sphereDistribution": "fibonacci"
+    }
+}
