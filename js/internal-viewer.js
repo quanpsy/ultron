@@ -98,10 +98,16 @@ const InternalViewer = {
      * Get cocoon data from current network
      */
     getCocoonData(cocoonId) {
-        if (!Renderer.currentNetwork || !Renderer.currentNetwork.cocoons) {
-            return null;
+        // Try NCXLoader first (has full internal data)
+        if (NCXLoader.currentExperiment && NCXLoader.currentExperiment.cocoons) {
+            return NCXLoader.currentExperiment.cocoons.find(c => c.id === cocoonId);
         }
-        return Renderer.currentNetwork.cocoons.find(c => c.id === cocoonId);
+        // Fallback to Renderer network data
+        if (Renderer.currentNetwork && Renderer.currentNetwork.ncxData && Renderer.currentNetwork.ncxData.cocoons) {
+            return Renderer.currentNetwork.ncxData.cocoons.find(c => c.id === cocoonId);
+        }
+        console.warn('[InternalViewer] No cocoon data source found');
+        return null;
     },
 
     /**
